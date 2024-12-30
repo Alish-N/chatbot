@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Add heroicons for better icons -->
+    <script src="https://unpkg.com/@heroicons/v2/24/outline/esm/index.js"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-3xl font-bold text-indigo-600">AI Chat Assistant</h1>
+                    <div id="user-info" class="hidden">
+                        <span class="text-gray-600 mr-2">Welcome,</span>
+                        <span id="username" class="font-semibold text-indigo-600"></span>
+                        <button onclick="logout()" class="ml-4 text-sm text-red-600 hover:text-red-800">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+            <!-- Login/Register Section -->
+            <div id="auth-section" class="mb-8 max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                    <div class="grid md:grid-cols-2 gap-0">
+                        <!-- Login Form -->
+                        <div class="p-8 bg-gradient-to-br from-indigo-50 to-white">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Welcome Back</h2>
+                            <form id="login-form" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" name="email" 
+                                           class="mt-1 block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm 
+                                                  focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                                    <input type="password" name="password" 
+                                           class="mt-1 block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm 
+                                                  focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                </div>
+                                <button type="submit" 
+                                        class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium
+                                               hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                                               focus:ring-offset-2 transition-colors">
+                                    Login
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div class="p-8 bg-white border-l border-gray-200">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">Create Account</h2>
+                            <form id="register-form" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                                    <input type="text" name="username" 
+                                           class="mt-1 block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm 
+                                                  focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" name="email" 
+                                           class="mt-1 block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm 
+                                                  focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                                    <input type="password" name="password" 
+                                           class="mt-1 block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm 
+                                                  focus:border-indigo-500 focus:ring-indigo-500 transition-colors">
+                                </div>
+                                <button type="submit" 
+                                        class="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-medium
+                                               hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 
+                                               focus:ring-offset-2 transition-colors">
+                                    Register
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div id="chat-section" class="hidden max-w-5xl mx-auto">
+                <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                    <!-- Chat Header -->
+                    <div class="bg-indigo-600 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-medium text-white">Chat with AI Assistant</h3>
+                            <span class="text-indigo-200 text-sm" id="chat-status">Online</span>
+                        </div>
+                    </div>
+
+                    <!-- Chat History -->
+                    <div id="chat-history" class="h-[500px] overflow-y-auto p-6 space-y-6">
+                        <!-- Messages will be inserted here -->
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="border-t border-gray-200 p-4 bg-gray-50">
+                        <form id="message-form" class="flex space-x-4">
+                            <input type="text" id="message-input" 
+                                   class="flex-1 rounded-lg border-gray-300 shadow-sm px-4 py-3
+                                          focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                   placeholder="Type your message...">
+                            <button type="submit" 
+                                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium
+                                           hover:bg-indigo-700 focus:outline-none focus:ring-2 
+                                           focus:ring-indigo-500 focus:ring-offset-2 transition-colors
+                                           flex items-center">
+                                <span>Send</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentChat = null;
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const chatSection = document.getElementById('chat-section');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const messageForm = document.getElementById('message-form');
+        const chatHistory = document.getElementById('chat-history');
+        const messageInput = document.getElementById('message-input');
+
+        // API Configuration
+        const API_URL = 'http://localhost:5000/api';
+        const api = axios.create({
+            baseURL: API_URL,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // Register User
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(registerForm);
+            try {
+                const response = await api.post('/api/users', {
+                    username: formData.get('username'),
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                });
+                currentUser = response.data.user;
+                await startNewChat();
+                showChat();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Registration failed');
+            }
+        });
+
+        // Login User
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            try {
+                const response = await api.post('/api/users/login', {
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                });
+                currentUser = response.data.user;
+                await startNewChat();
+                showChat();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Login failed');
+            }
+        });
+
+        // Start New Chat
+        async function startNewChat() {
+            try {
+                const response = await api.post('/chat/start', {
+                    user_id: currentUser.id
+                });
+                currentChat = response.data;
+                await loadChatHistory();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Failed to start chat');
+            }
+        }
+
+        // Send Message
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = messageInput.value.trim();
+            if (!content) return;
+
+            messageInput.value = '';
+            showLoading();
+
+            try {
+                const response = await api.post(`/chat/${currentChat.chat_id}/message`, {
+                    user_id: currentUser.id,
+                    content: content
+                });
+                
+                hideLoading();
+                appendMessage(response.data.user_message);
+                appendMessage(response.data.ai_message);
+            } catch (error) {
+                hideLoading();
+                alert(error.response?.data?.error || 'Failed to send message');
+            }
+        });
+
+        // Load Chat History
+        async function loadChatHistory() {
+            try {
+                const response = await api.get(`/chat/${currentChat.chat_id}/history`);
+                chatHistory.innerHTML = '';
+                response.data.chat.messages.forEach(appendMessage);
+            } catch (error) {
+                alert(error.response?.data?.error || 'Failed to load chat history');
+            }
+        }
+
+        // Append Message to Chat
+        function appendMessage(message) {
+            const messageElement = document.createElement('div');
+            const isAI = message.is_ai;
+            
+            messageElement.className = `flex ${isAI ? 'justify-start' : 'justify-end'}`;
+            
+            const innerContent = `
+                <div class="max-w-[80%] ${isAI ? 'bg-white border border-gray-200' : 'bg-indigo-600'} 
+                            rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-4 py-2 ${isAI ? 'bg-gray-50 border-b border-gray-200' : 'bg-indigo-700'}">
+                        <span class="text-sm font-medium ${isAI ? 'text-gray-600' : 'text-indigo-100'}">
+                            ${isAI ? 'AI Assistant' : message.sender.username}
+                        </span>
+                    </div>
+                    <div class="p-4">
+                        <p class="${isAI ? 'text-gray-800' : 'text-white'}">${message.content}</p>
+                    </div>
+                    <div class="px-4 py-2 ${isAI ? 'bg-gray-50 border-t border-gray-200' : 'bg-indigo-700'}">
+                        <span class="text-xs ${isAI ? 'text-gray-500' : 'text-indigo-200'}">
+                            ${new Date(message.created_at).toLocaleTimeString()}
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            messageElement.innerHTML = innerContent;
+            chatHistory.appendChild(messageElement);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Add loading indicator
+        function showLoading() {
+            const loadingElement = document.createElement('div');
+            loadingElement.id = 'loading-indicator';
+            loadingElement.className = 'flex justify-start';
+            loadingElement.innerHTML = `
+                <div class="bg-gray-100 rounded-lg p-4 flex items-center space-x-2">
+                    <div class="animate-bounce w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <div class="animate-bounce w-2 h-2 bg-gray-500 rounded-full" style="animation-delay: 0.2s"></div>
+                    <div class="animate-bounce w-2 h-2 bg-gray-500 rounded-full" style="animation-delay: 0.4s"></div>
+                </div>
+            `;
+            chatHistory.appendChild(loadingElement);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+
+        // Add logout function
+        function logout() {
+            currentUser = null;
+            currentChat = null;
+            chatHistory.innerHTML = '';
+            chatSection.classList.add('hidden');
+            authSection.classList.remove('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+        }
+
+        // Update showChat function
+        function showChat() {
+            authSection.classList.add('hidden');
+            chatSection.classList.remove('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('username').textContent = currentUser.username;
+        }
+    </script>
+</body>
+</html> 

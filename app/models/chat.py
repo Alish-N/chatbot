@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, ReferenceField, DateTimeField, ListField
+from mongoengine import Document, StringField, ReferenceField, DateTimeField, ListField, BooleanField
 from datetime import datetime
 from .user import User
 
@@ -6,6 +6,7 @@ class Message(Document):
     sender = ReferenceField(User, required=True)
     content = StringField(required=True)
     created_at = DateTimeField(default=datetime.utcnow)
+    is_ai = BooleanField(default=False)
     
     meta = {
         'collection': 'messages',
@@ -17,7 +18,8 @@ class Message(Document):
             'id': str(self.id),
             'sender': self.sender.to_dict(),
             'content': self.content,
-            'created_at': self.created_at
+            'created_at': self.created_at,
+            'is_ai': self.is_ai
         }
 
 class Chat(Document):
